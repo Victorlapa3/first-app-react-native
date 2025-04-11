@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import { NavigationContainer } from "@react-navigation/native"
+import Home from "./src/screens/home/Home"
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { createStackNavigator } from '@react-navigation/stack';
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <StackNavigator>
-      <Stack.Screen name="home"></Stack.Screen>
-    </StackNavigator>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="home" component={Home} options={{ headerTitle: "Início" }}></Stack.Screen>
+
+        {/* <Stack.Screen name="history" component={Home} options={{ headerTitle: "Histórico" }}></Stack.Screen> */}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }

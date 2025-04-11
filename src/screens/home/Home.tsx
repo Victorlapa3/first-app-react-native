@@ -2,20 +2,15 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
 import React, { useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
+import unlock from '../../../assets/unlock.png';
+import padlock from '../../../assets/padlock.png';
+import { generatePassword } from '../../services/password/passwordService';
 
-export default function Home() {
+
+export default function Home({ navigation }) {
     const [password, setPassword] = useState('');
 
-    const generatePassword = () => {
-        const length = 12;
-        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
-        let password = "";
-        for (let i = 0; i < length; i++) {
-            const randomIndex = Math.floor(Math.random() * charset.length);
-            password += charset[randomIndex];
-        }
-        setPassword(password);
-    }
+    
 
     const copyToClipboard = async () => {
         if (password) {
@@ -33,12 +28,16 @@ export default function Home() {
         setPassword('');
     }
 
+    const changeRoute = () => {
+        navigation.navigate("History");
+    }
+
     return (
         <View style={styles.container}>
             <Text style={{ color: "#0075C1", fontWeight: 'bold', fontSize: 30 }}>GERADOR DE SENHA</Text>
 
             <Image
-                source={password ? require('./assets/unlock.png') : require('./assets/padlock.png')}
+                source={password ? unlock : padlock}
                 style={styles.image}
                 resizeMode="contain"
             />
@@ -57,6 +56,10 @@ export default function Home() {
                 disabled={!password}
             >
                 <Text style={styles.buttonText}>COPIAR</Text>
+            </Pressable>
+
+            <Pressable style={styles.button} onPress={changeRoute}>
+                <Text style={styles.buttonText}>HISTÓRICO</Text>
             </Pressable>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
