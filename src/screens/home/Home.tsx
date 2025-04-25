@@ -5,6 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import unlock from '../../../assets/unlock.png';
 import padlock from '../../../assets/padlock.png';
 import { generatePassword } from '../../services/password/passwordService';
+import AppLink from '../../components/appLink/AppLink';
 
 
 export default function Home({ navigation }) {
@@ -30,6 +31,10 @@ export default function Home({ navigation }) {
 
     const changeRoute = () => {
         navigation.navigate("History");
+    }
+
+    function handleApi() {
+        navigation.navigate("testapi")
     }
 
     return (
@@ -59,12 +64,15 @@ export default function Home({ navigation }) {
             </Pressable>
 
             <Pressable style={styles.button} onPress={changeRoute}>
-                <Text style={styles.buttonText}>HISTÓRICO</Text>
+                <AppLink text="HISTÓRICO" route="history" navigation={navigation} style={styles.buttonText}/>
             </Pressable>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
                 <Pressable style={styles.button} onPress={handleRefresh}>
                     <Text style={styles.buttonText}>ATUALIZAR</Text>
+                </Pressable>
+                <Pressable style={styles.button} onPress={handleApi}>
+                    <Text style={styles.buttonText}>API</Text>
                 </Pressable>
             </View>
 
