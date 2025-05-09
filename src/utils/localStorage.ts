@@ -1,30 +1,30 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from 'expo-secure-store';
 
 // Buscar item
-export async function getStorageItem(item: string): Promise<string | null> {
+export async function getStorageItem(key: string): Promise<string | null> {
     try {
-        const value = await AsyncStorage.getItem(item);
+        const value = await SecureStore.getItemAsync(key);
         return value;
     } catch (error) {
-        console.error("Erro ao buscar item do AsyncStorage:", error);
+        console.error("Erro ao buscar item do SecureStore:", error);
         return null;
     }
 }
 
 // Salvar item
-export async function setStorageItem(item: string, value: string): Promise<void> {
+export async function setStorageItem(key: string, value: string): Promise<void> {
     try {
-        await AsyncStorage.setItem(item, value);
+        await SecureStore.setItemAsync(key, value);
     } catch (error) {
-        console.error("Erro ao salvar item no AsyncStorage:", error);
+        console.error("Erro ao salvar item no SecureStore:", error);
     }
 }
 
 // Remover item
-export async function removeStorageItem(item: string): Promise<void> {
+export async function removeStorageItem(key: string): Promise<void> {
     try {
-        await AsyncStorage.removeItem(item);
+        await SecureStore.deleteItemAsync(key);
     } catch (error) {
-        console.error("Erro ao remover item do AsyncStorage:", error);
+        console.error("Erro ao remover item do SecureStore:", error);
     }
 }
