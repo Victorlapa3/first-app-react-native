@@ -1,117 +1,44 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
 import React, { useState } from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import unlock from '../../../assets/unlock.png';
-import padlock from '../../../assets/padlock.png';
-import { generatePassword } from '../../services/password/passwordService';
-import AppLink from '../../components/appLink/AppLink';
+import { generatePassword } from '../../services/password/PasswordService';
+import { signout } from '../../services/auth/AuthService';
+
 
 
 export default function Home({ navigation }) {
-    const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('');
 
-    
+  const handleGenerate = async () => {
+    const result = await generatePassword();
+    setPassword(result);
+  };
 
-    const copyToClipboard = async () => {
-        if (password) {
-            await Clipboard.setStringAsync(password)
-                .then(() => {
-                    console.log('Senha copiada para a área de transferência!', password);
-                })
-                .catch(err => {
-                    console.error('Erro ao copiar a senha: ', err);
-                });
-        }
-    }
+  const handleLogout = async () => {
+    await signout();
+    navigation.replace('Signin');
+  };
 
-    const handleRefresh = () => {
-        setPassword('');
-    }
+  const handleCopy = async () => {
+    if (password) await Clipboard.setStringAsync(password);
+  };
 
-    const changeRoute = () => {
-        navigation.navigate("History");
-    }
-
-    function handleApi() {
-        navigation.navigate("testapi")
-    }
-
-    return (
-        <View style={styles.container}>
-            <Text style={{ color: "#0075C1", fontWeight: 'bold', fontSize: 30 }}>GERADOR DE SENHA</Text>
-
-            <Image
-                source={password ? unlock : padlock}
-                style={styles.image}
-                resizeMode="contain"
-            />
-
-            <Text style={[styles.buttonText, styles.buttonPassword, { fontSize: 20 }]}>
-                {password ? password : "Senha não gerada"}
-            </Text>
-
-            <Pressable style={styles.button} onPress={generatePassword}>
-                <Text style={styles.buttonText}>GERAR</Text>
-            </Pressable>
-
-            <Pressable
-                style={[styles.button, { backgroundColor: password ? '#0075C1' : '#004775' }]}
-                onPress={copyToClipboard}
-                disabled={!password}
-            >
-                <Text style={styles.buttonText}>COPIAR</Text>
-            </Pressable>
-
-            <Pressable style={styles.button} onPress={changeRoute}>
-                <AppLink text="HISTÓRICO" route="history" navigation={navigation} style={styles.buttonText}/>
-            </Pressable>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
-                <Pressable style={styles.button} onPress={handleRefresh}>
-                    <Text style={styles.buttonText}>ATUALIZAR</Text>
-                </Pressable>
-                <Pressable style={styles.button} onPress={handleApi}>
-                    <Text style={styles.buttonText}>API</Text>
-                </Pressable>
-            </View>
-
-            <StatusBar style="auto" />
-        </View>
-    );
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Sua senha</Text>
+      <Text style={styles.password}>{password}</Text>
+      <Pressable style={styles.button} onPress={handleGenerate}><Text style={styles.buttonText}>Gerar</Text></Pressable>
+      <Pressable style={styles.button} onPress={handleCopy}><Text style={styles.buttonText}>Copiar</Text></Pressable>
+      <Pressable style={styles.button} onPress={() => navigation.navigate('History')}><Text style={styles.buttonText}>Histórico</Text></Pressable>
+      <Pressable style={styles.button} onPress={handleLogout}><Text style={styles.buttonText}>Sair</Text></Pressable>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    image: {
-        width: 150,
-        height: 150,
-        marginTop: 20,
-        marginBottom: 20,
-    },
-    button: {
-        backgroundColor: '#0075C1',
-        padding: 10,
-        borderRadius: 5,
-        marginTop: 5,
-        width: 300,
-    },
-    buttonPassword: {
-        backgroundColor: '#00C2FF',
-        padding: 10,
-        borderRadius: 5,
-        marginTop: 5,
-        width: 300,
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  title: { fontSize: 22, marginBottom: 20 },
+  password: { fontSize: 18, marginBottom: 20, color: '#333' },
+  button: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginVertical: 5 },
+  buttonText: { color: '#fff' }
 });

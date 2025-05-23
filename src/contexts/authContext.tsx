@@ -1,111 +1,72 @@
-import { createContext, useEffect, useState } from "react"
-import { signup, signin } from "../services/auth/authResource" 
-import { api } from "../utils/api";
+import React, { createContext, useEffect, useState, ReactNode } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { signin, signup } from '../services/auth/AuthService';
+
+
+const TOKEN_KEY = 'access-token';
+
+interface AuthState {
+  token: string;
+  authenticated: boolean | null;
+}
+
+interface RegisterData {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    birthdate: string;
+  }  
+
+interface LoginData {
+  email: string;
+  password: string;
+}
 
 interface AuthContextProps {
-    authState?: {
-        token: string | null
-        authenticated: boolean | null
-    }
-    onRegister?: (
-        name: string,
-        email: string,
-        password: string,
-        confirmPassword: string
-    ) => Promise<any>
-    onLogin?: (email: string, password: string) => Promise<any>
-    onLogout?: () => Promise<any>
+  authState?: AuthState;
+  onRegister?: (data: RegisterData) => Promise<void>;
+  onLogin?: (data: LoginData) => Promise<void>;
+  onLogout?: () => Promise<void>;
 }
- 
-interface AuthenticatedProps {
-    token: string | null
-    authenticated: boolean | null
-}
- 
-interface AuthProviderProps {
-    children: React.ReactNode
-}
- 
-const TOKEN_KEY = "access-token"
- 
-export const AuthContext = createContext<AuthContextProps>({})
- 
- 
-export function AuthProvider({children}: AuthProviderProps) {
-    const [ authState, setAuthState ] = useState<AuthenticatedProps>({
-        token: null,
-        authenticated: null
-    })
- 
-    useEffect(() => {
-        async function loadToken() {
-            const token = await localStorage.getItem(TOKEN_KEY)
 
-            if(token){
-                api.defaults.headers.common["Authorization"] = `${token}`
+export const AuthContext = createContext<AuthContextProps>({});
 
-                setAuthState({
-                    token,
-                    authenticated: true,
-                })
-            }
-        }
- 
-        loadToken()
-    }, [])
- 
-    async function register(
-        name: string,
-        email: string,
-        password: string,
-        confirmPassword: string
-    ) {
-        try {
-            await signup({ name, email, password, confirmPassword })
-        } catch (error) {
-            throw error
-        }
-    }
- 
-    async function login(email: string, password: string) {
-        try {
-            const result = await signin( email, password )
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [authState, setAuthState] = useState<AuthState>({ token: '', authenticated: null });
 
-            setAuthState({
-                authenticated: true,
-                token: result.token,
-            })
- 
-            api.defaults.headers.common["Authorization"] = `${result.token}`
-            
-            await localStorage.setItem(TOKEN_KEY, result.token)
+  useEffect(() => {
+    const loadToken = async () => {
+      const token = await SecureStore.getItemAsync(TOKEN_KEY);
+      if (token) {
+        setAuthState({ token, authenticated: true });
+      } else {
+        setAuthState({ token: '', authenticated: false });
+      }
+    };
+    loadToken();
+  }, []);
 
-            return result;
-        } catch (error) {
-            throw error
-        }
-    }
- 
-    async function logout() {
-        try {
-           await localStorage.removeItem(TOKEN_KEY) 
+  const onRegister = async (data: RegisterData) => {
+    const res = await signup(data);
+    await SecureStore.setItemAsync(TOKEN_KEY, res.token);
+    setAuthState({ token: res.token, authenticated: true });
+  };
 
-           api.defaults.headers.common["Authorization"] = ""
+  const onLogin = async (data: LoginData) => {
+    const res = await signin(data.email, data.password);
+    await SecureStore.setItemAsync(TOKEN_KEY, res.token);
+    setAuthState({ token: res.token, authenticated: true });
+  };
 
-           setAuthState({
-            authenticated: null,
-            token: null,
-           })
-        } catch (error) {
- 
-        }
-    }
- 
-    const value = {
-        onRegister: register,
-        onLogin: login,
-        onLogout: logout
-    }
- 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+  const onLogout = async () => {
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    setAuthState({ token: '', authenticated: false });
+  };
+
+  return (
+    <AuthContext.Provider value={{ authState, onLogin, onRegister, onLogout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

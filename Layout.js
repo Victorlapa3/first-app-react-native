@@ -3,10 +3,14 @@ import Home from "./src/screens/home/Home";
 import History from "./src/screens/history/History";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TestApi from "./src/testApi/TestApi";
+import { useAuth } from "./src/hooks/UseAuth";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
+  const { authState, onLogout } = useAuth(); 
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
